@@ -1,0 +1,106 @@
+@page
+@model GuessingGameWithCosmodb.Pages.CreateContestModel
+
+@{
+    ViewData["Title"] = "CreateContest";
+}
+
+<h1>CreateContest</h1>
+@Html.AntiForgeryToken()
+<h4>Contest</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <div asp-validation-summary="All" class="text-danger" data-valmsg-summary="true"></div>
+        <div class="form-group">
+            <input asp-for="Contest.UId" class="form-control" value=@System.Guid.NewGuid() hidden />
+            <span asp-validation-for="Contest.UId" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Contest.Name" class="control-label"></label>
+            <input asp-for="Contest.Name" class="form-control" />
+            <span asp-validation-for="Contest.Name" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Contest.WinningNumber" class="control-label"></label>
+            <input asp-for="Contest.WinningNumber" class="form-control" />
+            <span asp-validation-for="Contest.WinningNumber" class="text-danger"></span>
+        </div>
+        <div class="form-group form-check">
+            <label class="form-check-label">
+                <input class="form-check-input" asp-for="Contest.Active" /> @Html.DisplayNameFor(model => model.Contest.Active)
+            </label>
+        </div>
+        
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+<div id="prize1">
+    <input type="text" name="prizeDescriptionCollection"/>
+    <select name="prizePlaceCollection">
+        <option value="1">First</option>
+        <option value="2">Second</option>
+        <option value="3">Third</option>
+    </select>
+</div>
+<div id="prize2">
+    <input type="text" name="prizeDescriptionCollection" />
+    <select name="prizePlaceCollection">
+        <option value="1">First</option>
+        <option value="2">Second</option>
+        <option value="3">Third</option>
+    </select>
+</div>
+<button id="btnCreateWithPrizes" value="Create" class="btn btn-primary">Submit Contest</button>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+
+        let btnCreate = document.getElementById('btnCreateWithPrizes');
+        btnCreate.addEventListener('click', function () {
+            CreateContest();
+        });
+        function CreateContest() {
+            let request = JSON.stringify({
+                id: 0,
+                uid: document.getElementById('Contest_UId').value,
+                name: document.getElementById('Contest_Name').value,
+                winningNumber: Number(document.getElementById('Contest_WinningNumber').value),
+                active: Boolean(document.getElementById('Contest_Active').value),
+                guesses: [],
+                prizes: getPrizes(),
+                contestants: []
+            });
+           
+            fetch('CreateContest?handler=OnPostAsync', {
+                method: 'post',
+                headers: {
+                    'Content-type': 'application/json',
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                body: request
+            });
+        };
+        function getPrizes()
+        {
+            let prizes = [];
+            let descriptions = document.getElementsByName('prizeDescriptionCollection');
+            let places = document.getElementsByName('prizePlaceCollection');
+            for (let index = 0; index < descriptions.length; index++)
+            {
+                let prize = {
+                    id: 0,
+                    description: descriptions[index].value,
+                    place: Number(places[index].value),
+                    isWon: false,
+                    contestId : 0
+                };
+                prizes.push(prize);
+            }
+            return prizes;
+        }
+    </script>
+}
