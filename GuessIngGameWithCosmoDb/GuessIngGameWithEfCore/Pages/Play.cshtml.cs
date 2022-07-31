@@ -15,60 +15,89 @@ namespace GuessingGameWithCosmodb.Pages
     {
         private readonly IGuessRepository _guessRepository;
         private readonly IContestRepository _contestRepository;
+        private readonly ILogger<PlayModel> _logger;
 
-        public PlayModel(IGuessRepository guessRepository, IContestRepository contestRepository)
+        public PlayModel(IGuessRepository guessRepository
+            , IContestRepository contestRepository
+            , ILogger<PlayModel> logger)
         {
             _contestRepository = contestRepository;
             _guessRepository = guessRepository;
+            _logger = logger;
         }
 
 
-        public async Task<IActionResult> OnGetAsync(int id)
+        public async Task<IActionResult> OnGetAsync(Guid id)
         {
             
             if(id == default)
             {
                 return NotFound();
             }
-            bool Found = await _contestRepository.ExistsAsync(id);
+            (bool Found, Contest FoundContest, string ErrorMessage) = await _contestRepository.TryGetAsync(id);
+            if(!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                _logger.LogError(ErrorMessage);
+                ModelState.AddModelError("Error",ErrorMessage);
+                return Page();
+            }
            
             if(!Found)
             {
                 return NotFound();
             }
-            contest = id;
+            contest = FoundContest;
+            contestId = id;
+            if (FoundContest.Prizes.All(p => p.IsWon))
+            {
+                ModelState.AddModelError("Error", "This contest has no more active prizes");
+                return Page();
+            }
+            
             return Page();
         }
 
         [BindProperty]
         public CreateGuessRequest guess { get; set; } = default!;
+        public Contest contest { get; set; }
         [BindProperty]
-        public int contest { get; set; }
-        
+        public Guid contestId { get; set; }
+
 
         // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid || guess == null || guess.Contest  == default)
+            if (!ModelState.IsValid || guess == null || contestId == default)
             {
                 return Page();
             }
-            Contest contest = await _contestRepository.GetAsync(guess.Contest);
-            Guess newGuess = new Guess
+            (bool found, Contest contest, string message) = await _contestRepository.TryGetAsync(contestId);
+            if (!string.IsNullOrWhiteSpace(message))
             {
-                Id = $"{guess.Id}",
-                Number = guess.Number,
-                Contestant = new Contestant
-                {
-                    Name = guess.Contestant.Name,
-                    Email = guess.Contestant.Email,
-                    Contest = contest
-                }
-            };
-            contest.Play(newGuess);
-            await _guessRepository.AddAsync(guess: newGuess);
-            await _contestRepository.UpdateAsync(contest: newGuess.Contest);
-            if (newGuess.Contestant.IsAWinner())
+                _logger.LogError(message);
+                ModelState.AddModelError("Error", message);
+                return Page();
+            }
+            if (!found)
+            {
+                return NotFound();
+            }
+            Guess newGuess = new (guess:guess);
+
+            //await _guessRepository.AddAsync(guess: newGuess);
+            bool won = contest.Play(newGuess);
+            (bool Found, string ErrorMessage) = await _contestRepository.TryUpdateAsync(contest: contest);
+            if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                _logger.LogError(ErrorMessage);
+                ModelState.AddModelError("Error", ErrorMessage);
+                return Page();
+            }
+            if (!Found)
+            {
+                return NotFound();
+            }
+            if (won)
             {
                 return RedirectToPage("./Won");
             }

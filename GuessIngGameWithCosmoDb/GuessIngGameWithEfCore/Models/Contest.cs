@@ -49,7 +49,7 @@ namespace GuessingGameWithCosmodb.Models
 		[JsonProperty(PropertyName = "prizes")]
 		public ICollection<Prize> Prizes { get; set; } = new List<Prize>();
 
-		public void Play(Guess guess)
+		public bool Play(Guess guess)
         {
 			Guesses.Add(guess);
 			Contestants.Add(guess.Contestant);
@@ -67,6 +67,7 @@ namespace GuessingGameWithCosmodb.Models
                         {
 							prize.Won();
 							guess.Contestant.PrizeId = prize.Id;
+							return true;
 						}
 						break;
 					case Place.Second:
@@ -74,6 +75,7 @@ namespace GuessingGameWithCosmodb.Models
 						{
 							prize.Won();
 							guess.Contestant.PrizeId = prize.Id;
+							return true;
 						}
 						break;
 					case Place.Third:
@@ -81,6 +83,7 @@ namespace GuessingGameWithCosmodb.Models
 						{
 							prize.Won();
 							guess.Contestant.PrizeId = prize.Id;
+							return true;
 						}
 						break;
 					default:
@@ -88,6 +91,7 @@ namespace GuessingGameWithCosmodb.Models
                 }
                 
             }
+			return false;
 			
         }
 

@@ -138,7 +138,63 @@ namespace GuessingGameWithCosmodb.Repositories
             string IdAsString = id.ToString();
             return await _gameDbcontainer.ReadItemAsync<Contest>(IdAsString, new PartitionKey(IdAsString));
         }
+        public async Task<(bool, Contest, string)> TryGetAsync(Guid id)
+        {
+            if (id == default)
+            {
+                return (false, new Contest(), "Invalid Id");
+            }
+            try
+            {
+                string IdAsString = id.ToString();
+                var response = await _gameDbcontainer.ReadItemAsync<Contest>(IdAsString, new PartitionKey(IdAsString));
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    return (false, new Contest(),"Contest Could Not be Found In Azure");
+                }
+                return (true, response, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return (false, new Contest(), ex.Message);
+            }
+        }
 
+        public async Task<bool> ExistsAsync(Guid id)
+        {
+            try
+            {
+                string IdAsString = id.ToString();
+                ItemResponse<Contest> response = await _gameDbcontainer.ReadItemAsync<Contest>(IdAsString, new PartitionKey(IdAsString));
+                return response.Resource is not null;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return false;
+            }
+        }
+
+        public async Task<(bool ,string)> TryCheckIfExistsAsync(Guid id)
+        {
+            try
+            {
+                if (id == default)
+                {
+                    return (false, "Invalid Id");
+                }
+                string IdAsString = id.ToString();
+                ItemResponse<Contest> response = await _gameDbcontainer.ReadItemAsync<Contest>(IdAsString, new PartitionKey(IdAsString));
+                return (response.StatusCode == HttpStatusCode.OK && response.Resource is not null, string.Empty);
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return (false, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"UnExpected Exception Encountered. View Exception Message: {ex.Message}");
+            }
+        }
     }
 }
 

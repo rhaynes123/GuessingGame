@@ -22,7 +22,7 @@ namespace GuessingGameWithCosmodb.Models
 		public bool IsWon { get; private set; } = false;
 		[ForeignKey("ContestId")]
 		[JsonProperty(PropertyName = "contest")]
-		public Contest Contest { get; set; } 
+		public Contest Contest { get; set; } = default!;
 
 		public void Won()
         {

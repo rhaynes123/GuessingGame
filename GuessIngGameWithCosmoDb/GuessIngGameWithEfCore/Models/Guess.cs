@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using GuessingGameWithCosmodb.DTOs;
 using Newtonsoft.Json;
 
 namespace GuessingGameWithCosmodb.Models
@@ -11,6 +12,17 @@ namespace GuessingGameWithCosmodb.Models
 		public Guess()
 		{
 
+		}
+		public Guess(CreateGuessRequest guess)
+		{
+			Id = $"{guess.Id}";
+			Number = guess.Number;
+			Contestant = new Contestant
+			{
+				Name = string.IsNullOrWhiteSpace(guess.Contestant.Name) ? throw new ArgumentException("name") : guess.Contestant.Name,
+				Email = string.IsNullOrWhiteSpace(guess.Contestant.Email) ? throw new ArgumentException("email") : guess.Contestant.Email,
+				
+			};
 		}
 		[Key]
 		[JsonProperty(PropertyName = "id")]
