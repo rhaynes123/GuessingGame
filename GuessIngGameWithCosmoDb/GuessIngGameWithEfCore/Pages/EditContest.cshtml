@@ -1,0 +1,71 @@
+@page
+@model GuessIngGameWithCosmodb.Pages.EditContestModel
+@{
+    ViewData["Title"] = "EditContest";
+}
+
+<h1>EditContest</h1>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<h4>Contest</h4>
+<hr />
+<form method="post">
+    <div class="row">
+        @Html.AntiForgeryToken()
+        <div class="col-md-4">
+            <div asp-validation-summary="All" class="text-danger" data-valmsg-summary="true"></div>
+            <div class="form-group">
+                <input asp-for="Contest.UId" class="form-control" hidden />
+                <span asp-validation-for="Contest.UId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Contest.Name" class="control-label"></label>
+                <input asp-for="Contest.Name" class="form-control" />
+                <span asp-validation-for="Contest.Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Contest.WinningNumber" class="control-label"></label>
+                <input asp-for="Contest.WinningNumber" class="form-control" />
+                <span asp-validation-for="Contest.WinningNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="Contest.Active" /> @Html.DisplayNameFor(model => model.Contest.Active)
+                </label>
+            </div>
+            <table>
+                <thead>
+                </thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Description</th>
+                    <th>Is won?</th>
+                    <th>Place</th>
+                </tr>
+                <tbody>
+                    <!-- Because I always forget model binding has to be done index based -->
+                    <!-- https://www.learnrazorpages.com/razor-pages/model-binding#binding-complex-collections -->
+                    <!-- This is also one of the few times where I NEED to use a list because I need an indexed collection type-->
+                    @if (Model.Contest is not null
+                            && Model.Contest.Prizes is not null
+                            && Model.Contest.Prizes.Any())
+                    {
+                        for (var item = 0; item < Model.Contest.Prizes.Count(); item++)
+                        {
+                            <tr>
+                                <td><input type="text" asp-for="Contest.Prizes[item].Id" /></td>
+                                <td><input type="text" asp-for="Contest.Prizes[item].Description" /></td>
+                                <td><input type="text" asp-for="Contest.Prizes[item].IsWon" /></td>
+                                <td><input type="text" asp-for="Contest.Prizes[item].Place" /></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            <button type="submit" value="Update" class="btn btn-primary">Update Contest</button>
+        </div>
+    </div>
+</form>
