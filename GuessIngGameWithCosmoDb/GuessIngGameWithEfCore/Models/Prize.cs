@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
 
@@ -13,9 +14,9 @@ namespace GuessingGameWithCosmodb.Models
 		}
 		[JsonProperty(PropertyName = "id")]
 		public string Id { get; set; } = Guid.NewGuid().ToString();
-		[JsonProperty("description")]
+		[Required, JsonProperty("description")]
 		public string Description { get; set; }
-		[JsonProperty(PropertyName = "place")]
+		[Required,JsonProperty(PropertyName = "place")]
 		public Enums.Place Place {get;set;}
 		[JsonProperty(PropertyName = "isWon")]
 		public bool IsWon { get; private set; } = false;

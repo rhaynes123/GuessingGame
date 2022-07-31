@@ -6,7 +6,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-var loggerFactory =
 builder.Services.AddSingleton<IContestRepository, ContestRepository>(options => {
     string url = builder.Configuration["CosmoDb:Account"];
     string key = builder.Configuration["CosmoDb:Key"];

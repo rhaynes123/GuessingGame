@@ -10,8 +10,8 @@ namespace GuessingGameWithCosmodb.Repositories
         Task<IList<Contest>> GetAllAsync();
         Task<bool> AddAsync(Contest contest);
         Task<bool> UpdateAsync(Contest contest);
-        Task<bool> ExistsAsync(int Id);
         Task<(bool, string)> TryAddAsync(Contest contest);
+        Task<(bool, string)> TryUpdateAsync(Contest contest);
     }
 }
 

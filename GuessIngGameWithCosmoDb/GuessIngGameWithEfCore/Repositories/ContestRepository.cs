@@ -16,6 +16,9 @@ namespace GuessingGameWithCosmodb.Repositories
          * https://docs.microsoft.com/en-us/azure/cosmos-db/sql/sql-api-get-started
          * https://www.youtube.com/watch?v=MicJm1hRNKU
          * https://medium.com/swlh/clean-architecture-with-partitioned-repository-pattern-using-azure-cosmos-db-62241854cbc5
+         * https://www.youtube.com/watch?v=XU1ZuwiWW_k
+         * https://stackoverflow.com/questions/71217581/azure-cosmos-db-stored-procedure-select-and-return-multiple-documents-without
+         * https://stackoverflow.com/questions/45741570/how-to-save-and-execute-a-stored-procedure-in-cosmos-db-through-azure-portal
          */
         #endregion
         private readonly Container _gameDbcontainer;
@@ -25,7 +28,7 @@ namespace GuessingGameWithCosmodb.Repositories
             string containerName)
         {
             _gameDbcontainer = cosmosClient.GetContainer(databaseName, containerName)
-                ?? throw new ArgumentNullException(nameof(_gameDbcontainer));
+                ?? throw new ArgumentNullException(nameof(cosmosClient));
         }
 
         public async Task<bool> AddAsync(Contest contest)
@@ -79,6 +82,26 @@ namespace GuessingGameWithCosmodb.Repositories
             await _gameDbcontainer.UpsertItemAsync(contest, new PartitionKey(contest.Id));
             return true;
         }
+        public async Task<(bool, string)> TryUpdateAsync(Contest contest)
+        {
+            if (contest is null)
+            {
+                return (false, "No Valid Contest Was Provided");
+            }
+            try
+            {
+                ItemResponse<Contest> response = await _gameDbcontainer.UpsertItemAsync(contest, new PartitionKey(contest.Id));
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    return (false, "Contest Could Not be Updated In Azure");
+                }
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            return (true, string.Empty);
+        }
 
         public async Task<IList<Contest>> GetAllAsync()
         {
@@ -96,7 +119,7 @@ namespace GuessingGameWithCosmodb.Repositories
             }
             return Contests;
         }
-
+        [Obsolete("Migrating to Cosmos so the Id value is now a string and will be generated from a guid")]
         public async Task<Contest> GetAsync(int id)
         {
             if(id == default)
@@ -112,13 +135,10 @@ namespace GuessingGameWithCosmodb.Repositories
             {
                 return new Contest();
             }
-            return (await GetAllAsync()).First(r => r.Id == id.ToString());
+            string IdAsString = id.ToString();
+            return await _gameDbcontainer.ReadItemAsync<Contest>(IdAsString, new PartitionKey(IdAsString));
         }
 
-        public async Task<bool> ExistsAsync(int Id)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
 

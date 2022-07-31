@@ -57,7 +57,7 @@ namespace GuessingGameWithCosmodb.Models
             {
 				throw new InvalidDataException("Play Cannot Be Called On Contests With No Prizes");
             }
-			var activePrizes = Prizes.Where(p => p.IsWon == false);
+            IEnumerable<Prize>? activePrizes = Prizes.Where(p => p.IsWon == false);
 			foreach(var prize in activePrizes)
             {
 				switch(prize.Place)
