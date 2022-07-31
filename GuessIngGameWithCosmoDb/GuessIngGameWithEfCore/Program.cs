@@ -10,8 +10,10 @@ builder.Services.AddSingleton<IContestRepository, ContestRepository>(options => 
     string url = builder.Configuration["CosmoDb:Account"];
     string key = builder.Configuration["CosmoDb:Key"];
     CosmosClient cosmosClient = new (url,key);
-    return new ContestRepository(cosmosClient,"GameDb","GameContainer");
+    return new ContestRepository(cosmosClient,"GameDb","GameContainer");//TODO move these values into a config I was lazy but this is gross
 });
+//TODO consider removing this altogether. The data is in a document format and isn't relational.
+//Also the partion key is based off contest number it might not be worth while to have a repo for data that isn't partioned differently.
 builder.Services.AddScoped<IGuessRepository, GuessRepository>(options => {
     string url = builder.Configuration["CosmoDb:Account"];
     string key = builder.Configuration["CosmoDb:Key"];

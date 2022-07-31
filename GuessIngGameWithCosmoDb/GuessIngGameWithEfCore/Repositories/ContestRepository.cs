@@ -9,6 +9,10 @@ namespace GuessingGameWithCosmodb.Repositories
 {
     public class ContestRepository: IContestRepository
     {
+        #region
+        // TODO s
+        // Cache this data I'm tired of having to deal with the latency of azure its driving me insance.
+        #endregion
         #region External Links
         /*
          * https://www.youtube.com/watch?v=5ZU2xA_Y3G8
@@ -168,7 +172,7 @@ namespace GuessingGameWithCosmodb.Repositories
                 ItemResponse<Contest> response = await _gameDbcontainer.ReadItemAsync<Contest>(IdAsString, new PartitionKey(IdAsString));
                 return response.Resource is not null;
             }
-            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
                 return false;
             }
