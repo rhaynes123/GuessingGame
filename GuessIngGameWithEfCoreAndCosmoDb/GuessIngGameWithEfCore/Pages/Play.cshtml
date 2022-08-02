@@ -1,0 +1,45 @@
+@page
+@model GuessIngGameWithEfCoreAndCosmoDb.Pages.PlayModel
+
+@{
+    ViewData["Title"] = "Play";
+}
+
+<h1>Play</h1>
+
+<h4>Guess</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input asp-for="guess.Contest" value=@Model.contest hidden/>
+            <div class="form-group">
+                <label asp-for="guess.Number" class="control-label"></label>
+                <input asp-for="guess.Number" class="form-control" />
+                <span asp-validation-for="guess.Number" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="guess.Contestant.Email" class="control-label"></label>
+                <input asp-for="guess.Contestant.Email" class="form-control" />
+                <span asp-validation-for="guess.Contestant.Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="guess.Contestant.Name" class="control-label"></label>
+                <input asp-for="guess.Contestant.Name" class="form-control" />
+                <span asp-validation-for="guess.Contestant.Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
